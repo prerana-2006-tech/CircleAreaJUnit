@@ -1,11 +1,8 @@
 
-name: Circle Area JUnit Tests
+name: Circle Area JUnit and Docker Hub
 
 on:
   push:
-    branches: [ "main" ]
-
-  pull_request:
     branches: [ "main" ]
 
 jobs:
@@ -21,7 +18,27 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-          cache: maven
 
       - name: Run JUnit Tests
         run: mvn test
+
+  docker:
+    needs: test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Docker Image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: preranagowda11/circle-area-junit:1.0
